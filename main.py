@@ -12,22 +12,15 @@ openai.api_key = OPENAI_API_KEY
 app = Flask(__name__)
 
 # 🧠 GPT (o4-mini) से Trend Content Generate Function
-def get_trend_update():
+def get_trend_update(category):
     prompt = (
-        "You are a professional social media trend expert. Generate a mixed list of 20–25 unique items optimized for Instagram Reels and Shorts viral growth. Each item must be unique and must belong to one of these 7 categories:\n"
-        "1. Cricket-related trending hashtags\n"
-        "2. Cricket meme hashtags\n"
-        "3. Cricket reel/video captions\n"
-        "4. Best time to upload cricket content (India based, 90%+ reach chance)\n"
-        "5. Casino trending hashtags\n"
-        "6. Satta/betting trending hashtags\n"
-        "7. Currently trending reel audio/music (short format, reel-friendly)\n\n"
-        "Rules:\n"
-        "- No repetition.\n"
-        "- All content must be based on today's real-time global trends.\n"
-        "- Keep language casual, engaging, and optimized for reach.\n"
-        "- Avoid long explanations, only the trending content in list format.\n\n"
-        "Output:"
+        f"You are a professional Instagram Reels expert. Based on current real-time trends, generate content for this category: {category}. Respond strictly in this format:\n"
+        f"\n📊 आज का अपडेट [{category.capitalize()}]:\n"
+        f"🕘 Best Time: [Insert India-based best time to upload]\n"
+        f"🎵 Trending Audio: [Insert currently trending audio/song name] (reel-friendly)\n"
+        f"📝 Caption: [Short, fun, creative line — must be reward-focused only, never mention risk] \n"
+        f"🏷️ Hashtags: #tag1 #tag2 ... (15–20 trending & relevant hashtags only)\n"
+        f"\nStrict rules:\n- Never repeat hashtags or sections\n- Do NOT include words like 'risk', 'danger', 'gamble' in captions. Only talk about reward/success/fun/luxury\n- Language should be sharp and optimized for reach\n- Never exceed the format above"
     )
 
     try:
@@ -53,8 +46,14 @@ def webhook():
         chat_id = data["message"]["chat"]["id"]
         user_msg = data["message"]["text"].strip().lower()
 
-        if user_msg == "/trend" or user_msg.startswith("/trend "):
-            trend_message = get_trend_update()
+        if user_msg.startswith("/trend"):
+            parts = user_msg.split(" ")
+            if len(parts) > 1:
+                category = parts[1]
+            else:
+                category = "cricket"
+
+            trend_message = get_trend_update(category)
             bot.send_message(chat_id=chat_id, text=trend_message)
 
     return "OK"
@@ -63,3 +62,4 @@ def webhook():
 if __name__ == "__main__":
     print("✅ Sohail Trend Bot Running")
     app.run(host="0.0.0.0", port=10000)
+    
