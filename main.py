@@ -1,95 +1,73 @@
 from flask import Flask, request
 import telegram
 import os
+import openai
 import schedule
 import threading
 import time
-import openai
-import random
-from datetime import datetime
 
-# Load Env Variables
-BOT_TOKEN = "7883457826:AAGEZ72ipQTpRrECa1Rzpmi_TSvrqgtnB44"
-CHAT_ID = "6544146670"
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# 📦 Environment Variables
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 bot = telegram.Bot(token=BOT_TOKEN)
+openai.api_key = OPENAI_API_KEY
 app = Flask(__name__)
 
-# Sample Hashtags and Music (refreshing logic)
-hashtag_categories = {
-    "fashion": ["#OOTD", "#StyleGoals", "#FashionInspo", "#StreetStyle", "#TrendyLook", "#LookBook", "#FashionGram", "#OutfitIdeas", "#StyleInspo", "#MensWear", "#WomensFashion", "#WardrobeGoals", "#SustainableStyle", "#DesiLook", "#RunwayVibes"],
-    "fitness": ["#FitnessGoals", "#WorkoutDaily", "#FitInspiration", "#GymTime", "#TrainHard", "#BodyTransformation", "#CardioKing", "#YogaMood", "#HealthyVibes", "#MuscleGain", "#FitFam", "#SweatItOut", "#DailyPush", "#BeStronger", "#NoExcuses"],
-    "food": ["#FoodieLife", "#TastyTreat", "#HomeChef", "#QuickRecipes", "#SpicyBites", "#FoodGoals", "#HealthyEating", "#DesiSwag", "#VeganVibes", "#CookingLove", "#Yummylicious", "#SweetTooth", "#FoodInspo", "#RecipeOfTheDay", "#FlavorBlast"],
-    "default": ["#Reels", "#ExplorePage", "#InstaDaily", "#ViralReels", "#CreatorsOfInstagram", "#InstaTrend", "#ForYouPage", "#ContentCreator", "#ViralVideo", "#NewTrend", "#2025Trend", "#ReelItFeelIt", "#JustPosted", "#TrendingNow", "#MustWatch"]
-}
-
-trending_music = [
-    "Chaleya – Jawan", "Tum Kya Mile – Rocky Aur Rani", "Calm Down – Rema", "Heeriye – Arijit Singh", "Kesariya – Brahmastra",
-    "Night Changes – One Direction", "Let Me Love You – DJ Snake", "Pasoori – Ali Sethi", "Levitating – Dua Lipa", "Aankhon Se Batana"
-]
-
-upload_timings = ["9AM", "12PM", "3PM", "6PM", "9PM"]
-
-def generate_caption(category="default"):
-    prompt = f"Write a short, catchy Instagram reel caption about {category}. Make it trendy, engaging, and under 20 words."
+# 🧠 GPT से Trend Data Generate Function
+def get_trend_update():
+    prompt = """
+Give today's Instagram Reels content idea based on trending topics.
+Return the result in this format:
+Caption: [a short and creative caption]
+Hashtags: [5 trending hashtags]
+Trending Audio: [trending song/audio name]
+"""
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=150,
+            temperature=0.7
         )
-        return response.choices[0].message.content.strip()
+        return response.choices[0].text.strip()
     except Exception as e:
-        return "🔥 Make your moment count!"
+        return "❌ GPT Error: " + str(e)
 
-def build_trend_message(category="default"):
-    hashtags = random.sample(hashtag_categories.get(category, hashtag_categories["default"]), 15)
-    music = random.choice(trending_music)
-    timing = random.choice(upload_timings)
-    caption = generate_caption(category)
-
-    message = f"""📊 आज का अपडेट [{category.title()}]:
-🕘 Best Time: {timing}
-🎵 Trending Audio: {music}
-📝 Caption Idea: {caption}
-🏷️ Hashtags:
-{' '.join(hashtags)}"""
-    return message
-
+# 📩 Flask Webhook
 @app.route('/')
 def home():
-    return "✅ Sohail Trend Bot Running!"
+    return "✅ Sohail Trend Bot Live!"
 
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 def webhook():
     data = request.get_json()
     if "message" in data and "text" in data["message"]:
         chat_id = data["message"]["chat"]["id"]
-        user_msg = data["message"]["text"].strip()
+        user_msg = data["message"]["text"].strip().lower()
 
-        if user_msg.startswith("/trend"):
-            parts = user_msg.split()
-            category = parts[1].lower() if len(parts) > 1 else "default"
-            message = build_trend_message(category)
-            bot.send_message(chat_id=chat_id, text=message)
+        if user_msg == "/trend":
+            trend_message = get_trend_update()
+            bot.send_message(chat_id=chat_id, text=trend_message)
 
     return "OK"
 
-# Daily 7PM Message
+# 🔁 Daily Auto 7PM Message
 def send_daily_update():
-    today_category = random.choice(list(hashtag_categories.keys()))
-    message = build_trend_message(today_category)
-    bot.send_message(chat_id=CHAT_ID, text=message)
+    trend_message = get_trend_update()
+    bot.send_message(chat_id=CHAT_ID, text=trend_message)
 
+# ⏰ Scheduler Thread
 def run_schedule():
+    schedule.every().day.at("19:00").do(send_daily_update)
     while True:
         schedule.run_pending()
         time.sleep(1)
 
-schedule.every().day.at("19:00").do(send_daily_update)
 threading.Thread(target=run_schedule).start()
 
-# Run the Flask app
+# 🚀 Run Flask App
 if __name__ == "__main__":
-    print("✅ Sohail Trend Bot Running Live")
+    print("✅ Sohail Trend Bot Running")
     app.run(host="0.0.0.0", port=10000)
