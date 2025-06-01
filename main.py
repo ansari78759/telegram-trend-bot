@@ -17,10 +17,10 @@ def get_trend_update(category):
         f"You are an expert Instagram content strategist for the Indian audience. Based on current real-time trends, generate content for this category: {category}. Respond strictly in this format:\n"
         f"\n📊 Aaj ka update [{category.capitalize()}]:\n"
         f"🕘 Best Time: [Insert India-based best time to upload]\n"
-        f"🎵 Trending Audio: [Hindi, Punjabi, or Haryanvi song only – name + artist] (reel-friendly)\n"
         f"📝 Caption: [Write in Hinglish – Hindi in Roman script only. Focus on reward/success. No risk or negativity.] \n"
         f"🏷️ Hashtags: #tag1 #tag2 ... (15–20 trending, India-relevant hashtags only)\n"
-        f"\nStrict Rules:\n- Do NOT include English or Western songs. Use only Hindi, Punjabi, or Haryanvi tracks.\n- Caption must be Hinglish (Roman Hindi), short and catchy.\n- Avoid words like 'risk', 'danger', 'gamble'. Focus on celebration, reward, and positivity.\n- Format should remain clean and short. Do not exceed specified structure."
+        f"💬 Extra Tip: [Write one short Hinglish line as a daily comment idea or hashtag trick to boost reel engagement. Must be fresh and change every time]"
+        f"\nStrict Rules:\n- Do NOT include English or Western songs.\n- Caption must be Hinglish (Roman Hindi), short and catchy.\n- Avoid words like 'risk', 'danger', 'gamble'. Focus on celebration, reward, and positivity.\n- Extra Tip must feel like a smart comment idea or fresh hashtag use trick.\n- Format should remain clean and short. Do not exceed specified structure."
     )
 
     try:
