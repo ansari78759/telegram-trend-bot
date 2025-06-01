@@ -21,15 +21,14 @@ def get_trend_update():
         "4. Best time to upload cricket content (India based, 90%+ reach chance)\n"
         "5. Casino trending hashtags\n"
         "6. Satta/betting trending hashtags\n"
-        "7. Currently trending reel audio/music (short format, reel-friendly)\n"
-        "\n"
+        "7. Currently trending reel audio/music (short format, reel-friendly)\n\n"
         "Rules:\n"
         "- No repetition.\n"
         "- All content must be based on today's real-time global trends.\n"
         "- Keep language casual, engaging, and optimized for reach.\n"
-        "- Avoid long explanations, only the trending content in list format.\n"
-        "\n"
-        "Output:")
+        "- Avoid long explanations, only the trending content in list format.\n\n"
+        "Output:"
+    )
 
     try:
         response = openai.ChatCompletion.create(
@@ -60,7 +59,7 @@ def webhook():
 
     return "OK"
 
-# 🚀 Run Flask App
+# 🚀 Start Flask App (for local or gunicorn)
 if __name__ == "__main__":
     print("✅ Sohail Trend Bot Running")
     app.run(host="0.0.0.0", port=10000)
