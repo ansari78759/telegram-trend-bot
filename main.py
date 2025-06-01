@@ -14,13 +14,13 @@ app = Flask(__name__)
 # 🧠 GPT (o4-mini) से Trend Content Generate Function
 def get_trend_update(category):
     prompt = (
-        f"You are a professional Instagram Reels expert. Based on current real-time trends, generate content for this category: {category}. Respond strictly in this format:\n"
-        f"\n📊 आज का अपडेट [{category.capitalize()}]:\n"
+        f"You are an expert Instagram content strategist for the Indian audience. Based on current real-time trends, generate content for this category: {category}. Respond strictly in this format:\n"
+        f"\n📊 Aaj ka update [{category.capitalize()}]:\n"
         f"🕘 Best Time: [Insert India-based best time to upload]\n"
-        f"🎵 Trending Audio: [Insert currently trending audio/song name] (reel-friendly)\n"
-        f"📝 Caption: [Short, fun, creative line — must be reward-focused only, never mention risk] \n"
-        f"🏷️ Hashtags: #tag1 #tag2 ... (15–20 trending & relevant hashtags only)\n"
-        f"\nStrict rules:\n- Never repeat hashtags or sections\n- Do NOT include words like 'risk', 'danger', 'gamble' in captions. Only talk about reward/success/fun/luxury\n- Language should be sharp and optimized for reach\n- Never exceed the format above"
+        f"🎵 Trending Audio: [Hindi, Punjabi, or Haryanvi song only – name + artist] (reel-friendly)\n"
+        f"📝 Caption: [Write in Hinglish – Hindi in Roman script only. Focus on reward/success. No risk or negativity.] \n"
+        f"🏷️ Hashtags: #tag1 #tag2 ... (15–20 trending, India-relevant hashtags only)\n"
+        f"\nStrict Rules:\n- Do NOT include English or Western songs. Use only Hindi, Punjabi, or Haryanvi tracks.\n- Caption must be Hinglish (Roman Hindi), short and catchy.\n- Avoid words like 'risk', 'danger', 'gamble'. Focus on celebration, reward, and positivity.\n- Format should remain clean and short. Do not exceed specified structure."
     )
 
     try:
