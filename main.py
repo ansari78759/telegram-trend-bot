@@ -6,7 +6,7 @@ import schedule
 import threading
 import time
 
-# 📦 Environment Variables
+# Load environment variables
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -15,31 +15,37 @@ bot = telegram.Bot(token=BOT_TOKEN)
 openai.api_key = OPENAI_API_KEY
 app = Flask(__name__)
 
-# 🧠 GPT से Trend Data Generate Function
-def get_trend_update():
-    prompt = """
-Give today's Instagram Reels content idea based on trending topics.
-Return the result in this format:
-Caption: [a short and creative caption]
-Hashtags: [5 trending hashtags]
-Trending Audio: [trending song/audio name]
-"""
+# GPT prompt generator
+def generate_trend_update(category):
+    prompt = f"""
+    Give a trending Instagram post idea in the {category} category.
+    Include:
+    - A highly engaging caption (influencer style)
+    - 5 trending hashtags
+    - One trending music/audio suggestion
+    - Best upload time (in IST) for highest reach (90%+ chance)
+    Format:
+    📸 Caption:
+    🎵 Music:
+    ⏰ Time:
+    🏷️ Hashtags:
+    """
+    
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=150,
-            temperature=0.7
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
         )
-        return response.choices[0].text.strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        return "❌ GPT Error: " + str(e)
+        return f"❌ GPT Error: {str(e)}"
 
-# 📩 Flask Webhook
+# Flask Home
 @app.route('/')
 def home():
-    return "✅ Sohail Trend Bot Live!"
+    return "✅ Sohail Trend Bot Running"
 
+# Webhook handler
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 def webhook():
     data = request.get_json()
@@ -47,27 +53,28 @@ def webhook():
         chat_id = data["message"]["chat"]["id"]
         user_msg = data["message"]["text"].strip().lower()
 
-        if user_msg == "/trend":
-            trend_message = get_trend_update()
-            bot.send_message(chat_id=chat_id, text=trend_message)
+        if user_msg.startswith("/trend"):
+            category = user_msg.replace("/trend", "").strip() or "general"
+            reply = generate_trend_update(category)
+            bot.send_message(chat_id=chat_id, text=reply)
 
     return "OK"
 
-# 🔁 Daily Auto 7PM Message
-def send_daily_update():
-    trend_message = get_trend_update()
-    bot.send_message(chat_id=CHAT_ID, text=trend_message)
+# Auto 7PM daily push
 
-# ⏰ Scheduler Thread
+def send_daily_update():
+    update = generate_trend_update("general")
+    bot.send_message(chat_id=CHAT_ID, text=update)
+
 def run_schedule():
-    schedule.every().day.at("19:00").do(send_daily_update)
     while True:
         schedule.run_pending()
         time.sleep(1)
 
+schedule.every().day.at("19:00").do(send_daily_update)
 threading.Thread(target=run_schedule).start()
 
-# 🚀 Run Flask App
+# Run Flask app
 if __name__ == "__main__":
     print("✅ Sohail Trend Bot Running")
     app.run(host="0.0.0.0", port=10000)
